@@ -171,7 +171,7 @@ export default function BrowsePage() {
                       </div>
 
                       <div className="flex justify-between text-xs text-gray-400">
-                        <span className="text-blue-400">Rating: {ws.elo_rating}</span>
+                        <span>{ws.total_votes} vote{ws.total_votes !== 1 ? 's' : ''}</span>
                         <span>{ws.photos.length} photo{ws.photos.length !== 1 ? 's' : ''}</span>
                       </div>
                     </div>
@@ -235,7 +235,6 @@ export default function BrowsePage() {
                     </div>
 
                     <div className="flex gap-4 text-sm text-gray-400">
-                      <span className="text-blue-400">Rating: {selectedWorkstation.elo_rating}</span>
                       <span>Votes: {selectedWorkstation.total_votes}</span>
                     </div>
                   </div>

@@ -7,7 +7,6 @@ import Carousel from '@/components/Carousel'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { getPhotoUrl } from '@/lib/imageUtils'
-import Navbar from '@/components/Navbar'
 
 type WorkstationWithPhotos = {
   id: string
@@ -109,7 +108,25 @@ export default function LeaderboardPage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-900">
         {/* Header */}
-	<Navbar />
+        <header className="bg-gray-800 border-b border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-white">🏆 Top 5 Leaderboard</h1>
+            <div className="flex gap-4">
+              <button
+                onClick={() => router.push('/vote')}
+                className="px-4 py-2 text-blue-400 hover:text-blue-300 font-medium"
+              >
+                Vote
+              </button>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="px-4 py-2 text-gray-400 hover:text-gray-300"
+              >
+                Dashboard
+              </button>
+            </div>
+          </div>
+        </header>
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
@@ -185,7 +202,6 @@ export default function LeaderboardPage() {
                           )}
                         </div>
                         <div className="flex gap-6 text-sm text-gray-400">
-                          <span className="font-medium">Rating: {ws.elo_rating}</span>
                           <span>Votes: {ws.total_votes}</span>
                           <span>Photos: {ws.photos.length}</span>
                         </div>
@@ -253,7 +269,6 @@ export default function LeaderboardPage() {
                       )}
                     </div>
                     <div className="flex gap-4 mt-2 text-sm text-gray-400">
-                      <span>Rating: {selectedWorkstation.elo_rating}</span>
                       <span>Votes: {selectedWorkstation.total_votes}</span>
                     </div>
                   </div>

@@ -302,9 +302,8 @@ export default function DashboardPage() {
                           {ws.title || 'Untitled Workstation'}
                         </h3>
                         <div className="flex gap-4 mt-2 text-sm text-gray-400">
-                          <span className="text-blue-400 font-medium">Rating: {ws.elo_rating}</span>
-                          <span>Votes: {ws.total_votes}</span>
-                          <span>Photos: {ws.photos.length}</span>
+                          <span>{ws.total_votes} vote{ws.total_votes !== 1 ? 's' : ''}</span>
+                          <span>{ws.photos.length} photo{ws.photos.length !== 1 ? 's' : ''}</span>
                         </div>
                       </div>
                       <button

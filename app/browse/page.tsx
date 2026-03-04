@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Navbar from '@/components/Navbar'
 import Carousel from '@/components/Carousel'
@@ -20,26 +19,45 @@ type WorkstationWithPhotos = {
   photos: { id: string; storage_path: string; path: string }[]
 }
 
+const PAGE_SIZE = 20
+
 export default function BrowsePage() {
-  const router = useRouter()
   const [workstations, setWorkstations] = useState<WorkstationWithPhotos[]>([])
-  const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
+  const [page, setPage] = useState(0)
+  const [selectedWorkstation, setSelectedWorkstation] = useState<WorkstationWithPhotos | null>(null)
 
   useEffect(() => {
-    loadWorkstations()
+    loadWorkstations(0)
   }, [])
 
-  const loadWorkstations = async () => {
+  const loadWorkstations = async (pageNum: number, append = false) => {
+    if (append) {
+      setLoadingMore(true)
+    } else {
+      setLoading(true)
+    }
+
     try {
-      const { data: workstationsData, error: wsError } = await supabase
+      const from = pageNum * PAGE_SIZE
+      const to = from + PAGE_SIZE - 1
+
+      // Get workstations with count
+      const { data: workstationsData, error: wsError, count } = await supabase
         .from('workstations')
-        .select('id, title, elo_rating, total_votes, created_at, is_dummy, user_id')
+        .select('id, title, elo_rating, total_votes, created_at, is_dummy, user_id', { count: 'exact' })
         .eq('is_active', true)
         .order('elo_rating', { ascending: false })
+        .range(from, to)
 
       if (wsError) throw wsError
 
+      // Check if there are more results
+      setHasMore((count || 0) > (pageNum + 1) * PAGE_SIZE)
+
+      // Load photos and profiles for each workstation
       const workstationsWithPhotos = await Promise.all(
         (workstationsData || []).map(async (ws) => {
           const { data: photos } = await supabase
@@ -72,109 +90,168 @@ export default function BrowsePage() {
         })
       )
 
-      setWorkstations(workstationsWithPhotos)
+      if (append) {
+        setWorkstations(prev => [...prev, ...workstationsWithPhotos])
+      } else {
+        setWorkstations(workstationsWithPhotos)
+      }
+      setPage(pageNum)
     } catch (error) {
       console.error('Error loading workstations:', error)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? workstations.length - 1 : prev - 1))
+  const loadMore = () => {
+    loadWorkstations(page + 1, true)
   }
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev === workstations.length - 1 ? 0 : prev + 1))
-  }
-
-  const currentWorkstation = workstations[currentIndex]
 
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-black">
         <Navbar />
 
-        {/* Main Content */}
-        <main className="max-w-6xl mx-auto px-4 py-8">
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Browse Workstations</h1>
+            <p className="text-gray-400">Explore setups from the community</p>
+          </div>
+
           {loading ? (
             <div className="text-center py-12 text-gray-300">Loading workstations...</div>
           ) : workstations.length === 0 ? (
             <div className="text-center py-12 bg-gray-950 rounded-lg border border-blue-900/30">
               <p className="text-gray-400 mb-4">No workstations available to browse.</p>
-              <button
-                onClick={() => router.push('/upload')}
-                className="text-blue-400 hover:text-blue-300 font-medium"
-              >
-                Upload the first workstation →
-              </button>
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* Workstation Card */}
-              <div className="bg-gray-950 rounded-lg border border-blue-900/30 p-6">
-                {/* Header */}
+            <>
+              {/* Grid of Workstations */}
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {workstations.map((ws) => (
+                  <div
+                    key={ws.id}
+                    onClick={() => setSelectedWorkstation(ws)}
+                    className="bg-gray-950 rounded-lg border border-blue-900/30 hover:border-blue-500/50 transition cursor-pointer overflow-hidden"
+                  >
+                    {/* First Photo */}
+                    {ws.photos[0] ? (
+                      <div className="w-full h-48 bg-black">
+                        <img
+                          src={getPhotoUrl(ws.photos[0].storage_path, 'medium')}
+                          alt={ws.title || 'Workstation'}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-48 bg-black flex items-center justify-center">
+                        <span className="text-gray-500">No photo</span>
+                      </div>
+                    )}
+
+                    {/* Info */}
+                    <div className="p-4">
+                      <h3 className="text-white font-semibold mb-2 truncate">
+                        {ws.title || 'Untitled Workstation'}
+                      </h3>
+                      
+                      {/* Display Name or Badges */}
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {ws.display_username && ws.username && (
+                          <span className="px-2 py-1 bg-blue-500/20 border border-blue-500/50 text-blue-300 text-xs rounded-full">
+                            {ws.username}
+                          </span>
+                        )}
+                        {ws.is_dummy && (
+                          <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded-full">
+                            SHOWCASE
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex justify-between text-xs text-gray-400">
+                        <span className="text-blue-400">Rating: {ws.elo_rating}</span>
+                        <span>{ws.photos.length} photo{ws.photos.length !== 1 ? 's' : ''}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Load More Button */}
+              {hasMore && (
+                <div className="text-center mt-8">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+                  >
+                    {loadingMore ? 'Loading...' : 'Load More'}
+                  </button>
+                  <p className="text-sm text-gray-500 mt-3">
+                    Showing {workstations.length} workstations
+                  </p>
+                </div>
+              )}
+
+              {!hasMore && workstations.length >= PAGE_SIZE && (
+                <div className="text-center mt-8 text-gray-500 text-sm">
+                  No more workstations to load
+                </div>
+              )}
+            </>
+          )}
+        </main>
+
+        {/* Modal for viewing full workstation */}
+        {selectedWorkstation && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50"
+            onClick={() => setSelectedWorkstation(null)}
+          >
+            <div
+              className="bg-gray-950 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-blue-900/30"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <h2 className="text-2xl font-bold text-white">
-                        {currentWorkstation.title || 'Untitled Workstation'}
-                      </h2>
-                      {currentWorkstation.is_dummy && (
+                    <h2 className="text-2xl font-bold text-white mb-2">
+                      {selectedWorkstation.title || 'Untitled Workstation'}
+                    </h2>
+                    
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {selectedWorkstation.display_username && selectedWorkstation.username && (
+                        <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/50 text-blue-300 text-xs font-semibold rounded-full">
+                          {selectedWorkstation.username}
+                        </span>
+                      )}
+                      {selectedWorkstation.is_dummy && (
                         <span className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
                           SHOWCASE
                         </span>
                       )}
-                      {currentWorkstation.display_username && currentWorkstation.username && (
-                        <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/50 text-blue-300 text-xs font-semibold rounded-full">
-                          @{currentWorkstation.username}
-                        </span>
-                      )}
                     </div>
-                    <div className="flex gap-6 text-sm text-gray-400">
-                      <span className="font-medium text-blue-400">Rating: {currentWorkstation.elo_rating}</span>
-                      <span>Votes: {currentWorkstation.total_votes}</span>
-                      <span>Photos: {currentWorkstation.photos.length}</span>
+
+                    <div className="flex gap-4 text-sm text-gray-400">
+                      <span className="text-blue-400">Rating: {selectedWorkstation.elo_rating}</span>
+                      <span>Votes: {selectedWorkstation.total_votes}</span>
                     </div>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {currentIndex + 1} / {workstations.length}
-                  </div>
+                  <button
+                    onClick={() => setSelectedWorkstation(null)}
+                    className="text-gray-400 hover:text-gray-300 text-3xl leading-none"
+                  >
+                    ×
+                  </button>
                 </div>
 
-                {/* Carousel */}
-                <Carousel photos={currentWorkstation.photos} getPhotoUrl={getPhotoUrl} />
-              </div>
-
-              {/* Navigation */}
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={goToPrevious}
-                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Previous
-                </button>
-                <button
-                  onClick={goToNext}
-                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition flex items-center gap-2"
-                >
-                  Next
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Keyboard Hint */}
-              <div className="text-center text-sm text-gray-500">
-                <p>Use ← → arrow keys to navigate</p>
+                <Carousel photos={selectedWorkstation.photos} getPhotoUrl={getPhotoUrl} />
               </div>
             </div>
-          )}
-        </main>
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   )

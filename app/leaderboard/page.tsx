@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import Navbar from '@/components/Navbar'
 import Carousel from '@/components/Carousel'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -130,6 +131,10 @@ export default function LeaderboardPage() {
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">🏆 Top 5 Leaderboard</h1>
+            <p className="text-gray-400">The highest rated workstations</p>
+          </div>
           {loading ? (
             <div className="text-center py-12 text-gray-300">Loading rankings...</div>
           ) : workstations.length === 0 ? (

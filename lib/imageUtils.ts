@@ -4,9 +4,9 @@ type ImageSize = 'thumb' | 'medium' | 'full'
 
 const transformConfigs = {
   thumb: {
-    width: 200,
-    height: 200,
-    quality: 75,
+    width: 400,
+    height: 400,
+    quality: 80,
   },
   medium: {
     width: 1200,

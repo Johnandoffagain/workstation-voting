@@ -10,9 +10,10 @@ type Photo = {
 type CarouselProps = {
   photos: Photo[]
   getPhotoUrl: (path: string, size?: 'thumb' | 'medium' | 'full') => string
+  height?: string
 }
 
-export default function Carousel({ photos, getPhotoUrl }: CarouselProps) {
+export default function Carousel({ photos, getPhotoUrl, height = '600px' }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -48,7 +49,7 @@ export default function Carousel({ photos, getPhotoUrl }: CarouselProps) {
     <>
       <div className="relative">
         {/* Main Image */}
-        <div className="relative w-full h-[600px] bg-black rounded-lg overflow-hidden border border-blue-900/20">
+        <div className="relative w-full bg-black rounded-lg overflow-hidden border border-blue-900/20" style={{ height }}>
           <img
             src={getPhotoUrl(photos[currentIndex].path, 'medium')}
             alt={`Photo ${currentIndex + 1}`}

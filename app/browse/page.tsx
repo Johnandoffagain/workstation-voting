@@ -128,7 +128,7 @@ export default function BrowsePage() {
           ) : (
             <>
               {/* Grid of Workstations */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {workstations.map((ws) => (
                   <div
                     key={ws.id}
@@ -211,7 +211,7 @@ export default function BrowsePage() {
             onClick={() => setSelectedWorkstation(null)}
           >
             <div
-              className="bg-gray-950 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-blue-900/30"
+              className="bg-gray-950 rounded-lg max-w-5xl w-full max-h-[95vh] overflow-y-auto border border-blue-900/30"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
@@ -246,7 +246,7 @@ export default function BrowsePage() {
                   </button>
                 </div>
 
-                <Carousel photos={selectedWorkstation.photos} getPhotoUrl={getPhotoUrl} />
+                <Carousel photos={selectedWorkstation.photos} getPhotoUrl={getPhotoUrl} height="80vh" />
               </div>
             </div>
           </div>

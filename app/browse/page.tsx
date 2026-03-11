@@ -145,7 +145,7 @@ export default function BrowsePage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-full h-96 bg-black flex items-center justify-center rounded-t-lg">
+                      <div className="w-full h-[400px] bg-black flex items-center justify-center rounded-t-lg">
                         <span className="text-gray-500">No photo</span>
                       </div>
                     )}

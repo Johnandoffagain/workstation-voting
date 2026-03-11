@@ -48,7 +48,7 @@ export default function Carousel({ photos, getPhotoUrl }: CarouselProps) {
     <>
       <div className="relative">
         {/* Main Image */}
-        <div className="relative w-full h-[500px] bg-black rounded-lg overflow-hidden border border-blue-900/20">
+        <div className="relative w-full h-[600px] bg-black rounded-lg overflow-hidden border border-blue-900/20">
           <img
             src={getPhotoUrl(photos[currentIndex].path, 'medium')}
             alt={`Photo ${currentIndex + 1}`}

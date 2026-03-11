@@ -128,7 +128,7 @@ export default function BrowsePage() {
           ) : (
             <>
               {/* Grid of Workstations */}
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {workstations.map((ws) => (
                   <div
                     key={ws.id}
@@ -137,7 +137,7 @@ export default function BrowsePage() {
                   >
                     {/* First Photo */}
                     {ws.photos[0] ? (
-                      <div className="w-full h-64 bg-black rounded-t-lg flex items-center justify-center">
+                      <div className="w-full h-80 bg-black rounded-t-lg flex items-center justify-center">
                         <img
                           src={getPhotoUrl(ws.photos[0].storage_path, 'medium')}
                           alt={ws.title || 'Workstation'}
@@ -145,7 +145,7 @@ export default function BrowsePage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-full h-64 bg-black flex items-center justify-center rounded-t-lg">
+                      <div className="w-full h-80 bg-black flex items-center justify-center rounded-t-lg">
                         <span className="text-gray-500">No photo</span>
                       </div>
                     )}

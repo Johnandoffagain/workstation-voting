@@ -35,11 +35,12 @@ export default function LeaderboardPage() {
 
   const loadLeaderboard = async () => {
     try {
-      // Get top 5 workstations sorted by Elo rating
+      // Get top 5 workstations sorted by Elo rating (exclude dummies)
       const { data: workstationsData, error: wsError } = await supabase
         .from('workstations')
         .select('*')
         .eq('is_active', true)
+        .eq('is_dummy', false)
         .order('elo_rating', { ascending: false })
         .limit(5)
 
@@ -107,8 +108,27 @@ export default function LeaderboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-black">
-        <Navbar />
+      <div className="min-h-screen bg-gray-900">
+        {/* Header */}
+        <header className="bg-gray-800 border-b border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-white">🏆 Top 5 Leaderboard</h1>
+            <div className="flex gap-4">
+              <button
+                onClick={() => router.push('/vote')}
+                className="px-4 py-2 text-blue-400 hover:text-blue-300 font-medium"
+              >
+                Vote
+              </button>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="px-4 py-2 text-gray-400 hover:text-gray-300"
+              >
+                Dashboard
+              </button>
+            </div>
+          </div>
+        </header>
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
@@ -116,11 +136,10 @@ export default function LeaderboardPage() {
             <h1 className="text-3xl font-bold text-white mb-2">🏆 Top 5 Leaderboard</h1>
             <p className="text-gray-400">The highest rated workstations</p>
           </div>
-
           {loading ? (
             <div className="text-center py-12 text-gray-300">Loading rankings...</div>
           ) : workstations.length === 0 ? (
-            <div className="text-center py-12 bg-gray-950 rounded-lg border border-blue-900/30">
+            <div className="text-center py-12 bg-gray-800 rounded-lg border border-gray-700">
               <p className="text-gray-400 mb-4">No workstations have been uploaded yet.</p>
               <button
                 onClick={() => router.push('/upload')}
@@ -137,10 +156,10 @@ export default function LeaderboardPage() {
                 return (
                   <div
                     key={ws.id}
-                    className={`bg-gray-950 rounded-lg border-2 transition cursor-pointer ${
+                    className={`bg-gray-800 rounded-lg border-2 transition cursor-pointer ${
                       isYours
                         ? 'border-green-500 shadow-lg shadow-green-500/20'
-                        : 'border-blue-900/30 hover:border-blue-500/50'
+                        : 'border-gray-700 hover:border-gray-600'
                     }`}
                     onClick={() => setSelectedWorkstation(ws)}
                   >
@@ -157,7 +176,7 @@ export default function LeaderboardPage() {
 
                       {/* First Photo */}
                       {ws.photos[0] && (
-                        <div className="w-32 h-32 bg-black rounded-lg overflow-hidden border border-blue-900/20">
+                        <div className="w-32 h-32 bg-gray-900 rounded-lg overflow-hidden">
                           <img
                             src={getPhotoUrl(ws.photos[0].storage_path, 'thumb')}
                             alt="Workstation"
@@ -178,13 +197,13 @@ export default function LeaderboardPage() {
                             </span>
                           )}
                           {ws.is_dummy && (
-                            <span className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
+                            <span className="px-3 py-1 bg-purple-500 text-white text-xs font-semibold rounded-full">
                               SHOWCASE
                             </span>
                           )}
                           {ws.display_username && ws.username && (
                             <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/50 text-blue-300 text-xs font-semibold rounded-full">
-                              {ws.username}
+                              @{ws.username}
                             </span>
                           )}
                         </div>
@@ -230,11 +249,11 @@ export default function LeaderboardPage() {
         {/* Modal for viewing full workstation */}
         {selectedWorkstation && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
             onClick={() => setSelectedWorkstation(null)}
           >
             <div
-              className="bg-gray-950 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-blue-900/30"
+              className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-700"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
@@ -251,7 +270,7 @@ export default function LeaderboardPage() {
                       )}
                       {selectedWorkstation.display_username && selectedWorkstation.username && (
                         <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/50 text-blue-300 text-xs font-semibold rounded-full">
-                          {selectedWorkstation.username}
+                          @{selectedWorkstation.username}
                         </span>
                       )}
                     </div>

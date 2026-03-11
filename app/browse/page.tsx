@@ -137,7 +137,7 @@ export default function BrowsePage() {
                   >
                     {/* First Photo */}
                     {ws.photos[0] ? (
-                      <div className="w-full h-48 bg-black">
+                      <div className="w-full aspect-video bg-black rounded-t-lg">
                         <img
                           src={getPhotoUrl(ws.photos[0].storage_path, 'medium')}
                           alt={ws.title || 'Workstation'}
@@ -145,7 +145,7 @@ export default function BrowsePage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-full h-48 bg-black flex items-center justify-center">
+                      <div className="w-full aspect-video bg-black flex items-center justify-center rounded-t-lg">
                         <span className="text-gray-500">No photo</span>
                       </div>
                     )}

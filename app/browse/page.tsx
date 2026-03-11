@@ -141,7 +141,7 @@ export default function BrowsePage() {
                         <img
                           src={getPhotoUrl(ws.photos[0].storage_path, 'medium')}
                           alt={ws.title || 'Workstation'}
-                          className="w-full h-full object-cover"
+                          className="max-w-full max-h-full object-contain"
                         />
                       </div>
                     ) : (
